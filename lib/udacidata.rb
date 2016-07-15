@@ -13,6 +13,8 @@ class Udacidata
     return object
   end
 
+  private
+  
   def self.exist_row_with_id?(id)
     CSV.foreach(@@data_path) do |row|
       return true if row.first == id
@@ -21,7 +23,7 @@ class Udacidata
   end
 
   def self.save(id, attributes)
-    row = [id.to_s]
+    row = [id]
     attributes.each_value {|value| row << value}
     unless row.length == 1
       CSV.open(@@data_path, "a") do |csv|
