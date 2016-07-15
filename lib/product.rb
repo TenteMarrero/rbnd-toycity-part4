@@ -18,6 +18,10 @@ class Product < Udacidata
     @@products << self
   end
 
+  def self.all
+    @@products
+  end
+
   private
 
     # Reads the last line of the data file, and gets the id if one exists
