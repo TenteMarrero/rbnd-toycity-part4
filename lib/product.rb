@@ -1,7 +1,7 @@
 require_relative 'udacidata'
 
 class Product < Udacidata
-  attr_reader :id, :price, :brand, :name
+  attr_reader :id, :price, :brand, :product
 
   def initialize(opts={})
     # Get last ID from the database if ID exists
@@ -10,9 +10,9 @@ class Product < Udacidata
     @id = opts[:id] ? opts[:id].to_i : @@count_class_instances
     # Increment ID by 1
     auto_increment if !opts[:id]
-    # Set the brand, name, and price normally
+    # Set the brand, product, and price normally
     @brand = opts[:brand]
-    @name = opts[:name]
+    @product = opts[:product]
     @price = opts[:price]
   end
 

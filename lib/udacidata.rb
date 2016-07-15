@@ -14,14 +14,20 @@ class Udacidata
   end
 
   def self.all
-    rows = CSV.read(@@data_path)
-    headers = rows[0]
-    rows.delete_at(0)
-    rows.map do |row|
-      attributes = {}
-      row.each.with_index do |index, attribute|
-        attributes[headers[index.to_i-1]] = attribute        
+    load_data
+    @rows.map do |row|
+      self.new(get_attributes(row))
+    end
+  end
+
+  def self.first(n = nil)
+    load_data
+    if n
+      @rows.first(n).map do |row|
+        self.new(get_attributes(row))
       end
+    else
+      attributes = get_attributes(@rows.first)
       self.new(attributes)
     end
   end
@@ -44,4 +50,20 @@ class Udacidata
       csv << row
     end
   end
+
+  def self.load_data() 
+    @rows = CSV.read(@@data_path)
+    @headers = @rows[0]
+    @rows.delete_at(0)
+  end
+
+  def self.get_attributes(row)
+    attributes = {}
+    row.each.with_index do |attribute, index|
+      attributes[@headers[index.to_i].to_sym] = attribute        
+    end
+    #TODO: send attributes as id:
+    return attributes;
+  end
+
 end
