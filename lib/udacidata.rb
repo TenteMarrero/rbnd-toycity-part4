@@ -13,6 +13,19 @@ class Udacidata
     return object
   end
 
+  def self.all
+    rows = CSV.read(@@data_path)
+    headers = rows[0]
+    rows.delete_at(0)
+    rows.map do |row|
+      attributes = {}
+      row.each.with_index do |index, attribute|
+        attributes[headers[index.to_i-1]] = attribute        
+      end
+      self.new(attributes)
+    end
+  end
+
   private
   
   def self.exist_row_with_id?(id)
@@ -24,11 +37,11 @@ class Udacidata
 
   def self.save(id, attributes)
     row = [id]
-    attributes.each_value {|value| row << value}
-    unless row.length == 1
-      CSV.open(@@data_path, "a") do |csv|
-        csv << row
-      end
+    attributes.each do |key, value|
+      row << value if key != :id
+    end
+    CSV.open(@@data_path, "a") do |csv|
+      csv << row
     end
   end
 end

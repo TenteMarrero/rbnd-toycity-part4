@@ -5,12 +5,10 @@ require 'faker'
 
 def db_seed
   brands = []
-  10.times do
-    brands << Faker::Company.name
-  end
-  100.times do
+  10.times do |id|
+    brand = Faker::Company.name
     name = Faker::Commerce.product_name
     price = Faker::Commerce.price.to_f
-    Product.create(brand: brands.sample, name: name, price: price)
+    Product.create(brand: brand, name: name, price: price)
   end
 end

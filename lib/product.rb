@@ -1,7 +1,6 @@
 require_relative 'udacidata'
 
 class Product < Udacidata
-  @@products = []
   attr_reader :id, :price, :brand, :name
 
   def initialize(opts={})
@@ -15,11 +14,6 @@ class Product < Udacidata
     @brand = opts[:brand]
     @name = opts[:name]
     @price = opts[:price]
-    @@products << self
-  end
-
-  def self.all
-    @@products
   end
 
   private
