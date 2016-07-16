@@ -54,6 +54,15 @@ class Udacidata
     end
   end
 
+  def self.destroy(id)
+    load_data
+    index_to_delete = @rows.index {|row| row.first == id.to_s}
+    data_object = get_object_at(index_to_delete)
+    @rows.delete_at(index_to_delete)
+    rewrite_file
+    return data_object
+  end
+
   private
   
   def self.exist_row_with_id?(id)
@@ -88,4 +97,14 @@ class Udacidata
     return attributes;
   end
 
+  def self.rewrite_file
+    CSV.open(@@data_path, "wb") do |csv|
+      csv << @headers
+      @rows.each {|row| csv << row}
+    end
+  end
+
+  def self.get_object_at(index)
+    self.new(get_attributes(@rows[index]))
+  end
 end
