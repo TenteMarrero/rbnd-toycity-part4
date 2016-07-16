@@ -32,6 +32,18 @@ class Udacidata
     end
   end
 
+  def self.last(n = nil)
+    load_data
+    if n
+      @rows.last(n).map do |row|
+        self.new(get_attributes(row))
+      end
+    else
+      attributes = get_attributes(@rows.last)
+      self.new(attributes)
+    end
+  end
+
   private
   
   def self.exist_row_with_id?(id)
