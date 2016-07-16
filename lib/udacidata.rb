@@ -44,6 +44,16 @@ class Udacidata
     end
   end
 
+  def self.find(id)
+    load_data
+    row = @rows.find {|row| row.first == id.to_s}
+    if row
+      self.new(get_attributes(row))
+    else
+      return false
+    end
+  end
+
   private
   
   def self.exist_row_with_id?(id)
