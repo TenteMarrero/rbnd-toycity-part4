@@ -1,6 +1,7 @@
 require_relative 'udacidata'
 
 class Product < Udacidata
+  @@headers_sym = [:id, :brand, :name, :price]
   attr_reader :id, :price, :brand, :name
 
   def initialize(opts={})
@@ -17,7 +18,11 @@ class Product < Udacidata
   end
 
   def self.get_attr_in_csv_order
-    [:id, :brand, :name, :price]
+    @@headers_sym
+  end
+
+  def get_attr_in_csv_order
+    @@headers_sym
   end
 
   private
