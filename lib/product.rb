@@ -1,7 +1,7 @@
 require_relative 'udacidata'
 
 class Product < Udacidata
-  attr_reader :id, :price, :brand, :product
+  attr_reader :id, :price, :brand, :name
 
   def initialize(opts={})
     # Get last ID from the database if ID exists
@@ -10,10 +10,14 @@ class Product < Udacidata
     @id = opts[:id] ? opts[:id].to_i : @@count_class_instances
     # Increment ID by 1
     auto_increment if !opts[:id]
-    # Set the brand, product, and price normally
+    # Set the brand, name, and price normally
     @brand = opts[:brand]
-    @product = opts[:product]
+    @name = opts[:name] || opts[:product]
     @price = opts[:price]
+  end
+
+  def self.get_attr_in_csv_order
+    [:id, :brand, :name, :price]
   end
 
   private

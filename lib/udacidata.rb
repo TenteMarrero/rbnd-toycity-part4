@@ -46,7 +46,13 @@ class Udacidata
 
   def self.find(id)
     load_data
-    row = @rows.find {|row| row.first == id.to_s}
+    self.find_attribute_value(:id, id)
+  end
+
+  def self.find_attribute_value(attribute, value)
+    load_data
+    attr_order = get_attr_in_csv_order.index(attribute)
+    row = @rows.find {|row| row[attr_order] == value.to_s}
     if row
       self.new(get_attributes(row))
     else
@@ -61,6 +67,16 @@ class Udacidata
     @rows.delete_at(index_to_delete)
     rewrite_file
     return data_object
+  end
+
+  def self.method_missing(method_name, *arguments)
+    attr_name = method_name.to_s.split('_').last
+    if (is_valid_method_prefix?(method_name.to_s) && is_valid_method_sufix?(attr_name) && arguments.length == 1)
+      create_finder_methods(attr_name.to_sym)
+      return self.send(method_name.to_sym, arguments.first)
+    else
+      puts "No method named #{method_name}"
+    end
   end
 
   private
@@ -85,6 +101,7 @@ class Udacidata
   def self.load_data() 
     @rows = CSV.read(@@data_path)
     @headers = @rows[0]
+    @headers_symb = get_attr_in_csv_order
     @rows.delete_at(0)
   end
 
@@ -93,7 +110,6 @@ class Udacidata
     row.each.with_index do |attribute, index|
       attributes[@headers[index.to_i].to_sym] = attribute        
     end
-    #TODO: send attributes as id:
     return attributes;
   end
 
@@ -107,4 +123,13 @@ class Udacidata
   def self.get_object_at(index)
     self.new(get_attributes(@rows[index]))
   end
+
+  def self.is_valid_method_prefix?(method_name)
+    method_name.start_with?("find_by_")
+  end
+
+  def self.is_valid_method_sufix?(attr_name)
+    @headers_symb.include?(attr_name.to_sym)
+  end
+
 end
