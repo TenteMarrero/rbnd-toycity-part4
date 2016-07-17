@@ -16,31 +16,25 @@ class Udacidata
   def self.all
     load_data
     @rows.map do |row|
-      self.new(get_attributes(row))
+      create_instance_from_array(row)
     end
   end
 
   def self.first(n = nil)
     load_data
     if n
-      @rows.first(n).map do |row|
-        self.new(get_attributes(row))
-      end
+      @rows.first(n).map {|row| create_instance_from_array(row)}
     else
-      attributes = get_attributes(@rows.first)
-      self.new(attributes)
+      create_instance_from_array(@rows.first)
     end
   end
 
   def self.last(n = nil)
     load_data
     if n
-      @rows.last(n).map do |row|
-        self.new(get_attributes(row))
-      end
+      @rows.last(n).map {|row| create_instance_from_array(row)}
     else
-      attributes = get_attributes(@rows.last)
-      self.new(attributes)
+      create_instance_from_array(@rows.last)
     end
   end
 
@@ -54,7 +48,7 @@ class Udacidata
     attr_order = get_attr_in_csv_order.index(attribute)
     row = @rows.find {|row| row[attr_order] == value.to_s}
     if row
-      self.new(get_attributes(row))
+      create_instance_from_array(row)
     else
       return false
     end
@@ -77,6 +71,19 @@ class Udacidata
     else
       puts "No method named #{method_name}"
     end
+  end
+
+  def self.where(opts = {})
+    load_data
+    attr_name = nil
+    attr_value = nil
+    opts.each do |key, value|
+      attr_name = key
+      attr_value = value
+    end 
+    attr_order = get_attr_in_csv_order.index(attr_name.to_sym)
+    results = @rows.select {|row| row[attr_order] == attr_value.to_s}
+    results.map {|result| create_instance_from_array(result)}
   end
 
   private
@@ -105,14 +112,6 @@ class Udacidata
     @rows.delete_at(0)
   end
 
-  def self.get_attributes(row)
-    attributes = {}
-    row.each.with_index do |attribute, index|
-      attributes[@headers[index.to_i].to_sym] = attribute        
-    end
-    return attributes;
-  end
-
   def self.rewrite_file
     CSV.open(@@data_path, "wb") do |csv|
       csv << @headers
@@ -121,7 +120,15 @@ class Udacidata
   end
 
   def self.get_object_at(index)
-    self.new(get_attributes(@rows[index]))
+    create_instance_from_array(@rows[index])
+  end
+
+  def self.create_instance_from_array(row)
+    attributes = {}
+    row.each.with_index do |attribute, index|
+      attributes[@headers[index.to_i].to_sym] = attribute        
+    end
+    self.new(attributes)
   end
 
   def self.is_valid_method_prefix?(method_name)
