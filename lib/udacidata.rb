@@ -42,11 +42,6 @@ class Udacidata
     end
   end
 
-  def self.find(id)
-    load_data
-    self.find_attribute_value(:id, id)
-  end
-
   def self.find_attribute_value(attribute, value)
     load_data
     attr_order = get_attr_in_csv_order.index(attribute)
@@ -58,13 +53,17 @@ class Udacidata
     end
   end
 
-  def self.destroy(id)
+  def self.destroy_element(id)
     load_data
     index_to_delete = @@rows.index {|row| row.first == id.to_s}
-    data_object = get_object_at(index_to_delete)
-    @@rows.delete_at(index_to_delete)
-    rewrite_file
-    return data_object
+    if index_to_delete
+      data_object = get_object_at(index_to_delete)
+      @@rows.delete_at(index_to_delete)
+      rewrite_file
+      return data_object
+    else
+      return false
+    end
   end
 
   def self.method_missing(method_name, *arguments)

@@ -25,6 +25,22 @@ class Product < Udacidata
     @@headers_sym
   end
 
+  def self.destroy(id)
+    result = destroy_element(id)
+    if result
+      return result
+    else
+    end
+  end
+
+  def self.find(id)
+    result = find_attribute_value(:id, id)
+    if result
+      return result
+    else
+    end
+  end
+
   private
 
     # Reads the last line of the data file, and gets the id if one exists
