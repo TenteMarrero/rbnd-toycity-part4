@@ -39,7 +39,7 @@ module Analyzable
       "- #{key}: #{value}"
     end
     report = ""
-    lines.each {|line| report += line + '\n'}
+    lines.each {|line| report += line + "\n"}
     return report
   end
 

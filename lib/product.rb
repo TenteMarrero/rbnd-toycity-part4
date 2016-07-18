@@ -30,6 +30,7 @@ class Product < Udacidata
     if result
       return result
     else
+      raise ProductNotFoundError, "Product with id #{id} does not exist."
     end
   end
 
@@ -38,6 +39,7 @@ class Product < Udacidata
     if result
       return result
     else
+      raise ProductNotFoundError, "Product with id #{id} does not exist."
     end
   end
 
