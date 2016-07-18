@@ -1,7 +1,6 @@
 require_relative 'udacidata'
 
 class Product < Udacidata
-  @@headers_sym = [:id, :brand, :name, :price]
   attr_reader :id, :price, :brand, :name
 
   def initialize(opts={})
@@ -18,29 +17,7 @@ class Product < Udacidata
   end
 
   def self.get_attr_in_csv_order
-    @@headers_sym
-  end
-
-  def get_attr_in_csv_order
-    @@headers_sym
-  end
-
-  def self.destroy(id)
-    result = destroy_element(id)
-    if result
-      return result
-    else
-      raise ProductNotFoundError, "Product with id #{id} does not exist."
-    end
-  end
-
-  def self.find(id)
-    result = find_attribute_value(:id, id)
-    if result
-      return result
-    else
-      raise ProductNotFoundError, "Product with id #{id} does not exist."
-    end
+    return [:id, :brand, :name, :price]
   end
 
   private

@@ -4,10 +4,6 @@ require 'csv'
 
 class Udacidata
   @@data_path = File.dirname(__FILE__) + "/../data/data.csv"
-  @@rows = []
-  @@headers = []
-  @@headers_symb = []
-
 
   def self.create(attributes = nil)
     object = self.new(attributes)
@@ -18,56 +14,51 @@ class Udacidata
   end
 
   def self.all
-    load_data
-    @@rows.map do |row|
+    rows = CSV.read(@@data_path)
+    rows.delete_at(0)
+    rows.map do |row|
       create_instance_from_array(row)
     end
   end
 
-  def self.first(n = nil)
-    load_data
-    if n
-      @@rows.first(n).map {|row| create_instance_from_array(row)}
-    else
-      create_instance_from_array(@@rows.first)
-    end
+  def self.first(item = 1)
+    item > 1 ? all.take(item) : all.first
   end
 
-  def self.last(n = nil)
-    load_data
-    if n
-      @@rows.last(n).map {|row| create_instance_from_array(row)}
+  def self.last(item = 1)
+    item > 1 ? all.reverse.take(item) : all.reverse.first
+  end
+
+  def self.find(id)
+    result = find_attribute_value(:id, id)
+    if result
+      return result
     else
-      create_instance_from_array(@@rows.last)
+      raise ProductNotFoundError, "Product with id #{id} does not exist."
     end
   end
 
   def self.find_attribute_value(attribute, value)
-    load_data
-    attr_order = get_attr_in_csv_order.index(attribute)
-    row = @@rows.find {|row| row[attr_order] == value.to_s}
-    if row
-      create_instance_from_array(row)
-    else
-      return false
-    end
+    all.find {|instance| instance.send(attribute) == value}
   end
 
-  def self.destroy_element(id)
-    load_data
-    index_to_delete = @@rows.index {|row| row.first == id.to_s}
-    if index_to_delete
-      data_object = get_object_at(index_to_delete)
-      @@rows.delete_at(index_to_delete)
-      rewrite_file
-      return data_object
+  def self.destroy(id)
+    instance = find(id)
+    if (instance)
+      table = CSV.table(@@data_path)
+      table.delete_if do |row|
+        row[:id] == id
+      end
+      File.open(@@data_path, 'w') do |f|
+        f.write(table.to_csv)
+      end
+      return instance
     else
-      return false
+      raise ProductNotFoundError, "Product with id #{id} does not exist."
     end
   end
 
   def self.method_missing(method_name, *arguments)
-    load_data
     attr_name = method_name.to_s.split('_').last
     if (is_valid_method_prefix?(method_name.to_s) && is_valid_method_sufix?(attr_name) && arguments.length == 1)
       create_finder_methods(attr_name.to_sym)
@@ -78,21 +69,24 @@ class Udacidata
   end
 
   def self.where(opts = {})
-    load_data
     attr_name = nil
     attr_value = nil
     opts.each do |key, value|
       attr_name = key
       attr_value = value
-    end 
-    attr_order = get_attr_in_csv_order.index(attr_name.to_sym)
-    results = @@rows.select {|row| row[attr_order] == attr_value.to_s}
-    results.map {|result| create_instance_from_array(result)}
+    end
+    all.select {|instance| instance.send(attr_name) == attr_value.to_s}
   end
 
   def update(opts = {})
     update_attributes(opts)
-    update_in_csv
+    self.class.destroy(self.id)
+    row = convert_instance_to_array
+    opts = {}
+    self.class.get_attr_in_csv_order.each_with_index do |header, index|
+      opts[header] = row[index]
+    end
+    self.class.create(opts)
     return self
   end
 
@@ -115,28 +109,15 @@ class Udacidata
     end
   end
 
-  def self.load_data
-    @@rows = CSV.read(@@data_path)
-    @@headers = @@rows[0]
-    @@headers_symb = get_attr_in_csv_order
-    @@rows.delete_at(0)
-  end
-
-  def self.rewrite_file
-    CSV.open(@@data_path, "wb") do |csv|
-      csv << @@headers
-      @@rows.each {|row| csv << row}
-    end
-  end
-
   def self.get_object_at(index)
     create_instance_from_array(@@rows[index])
   end
 
   def self.create_instance_from_array(row)
     attributes = {}
+    headers = get_attr_in_csv_order
     row.each.with_index do |attribute, index|
-      attributes[@@headers[index.to_i].to_sym] = attribute        
+      attributes[headers[index.to_i].to_sym] = attribute        
     end
     self.new(attributes)
   end
@@ -146,7 +127,7 @@ class Udacidata
   end
 
   def self.is_valid_method_sufix?(attr_name)
-    @@headers_symb.include?(attr_name.to_sym)
+    get_attr_in_csv_order.include?(attr_name.to_sym)
   end
 
   def update_attributes(opts = {})
@@ -159,17 +140,11 @@ class Udacidata
     end
   end
 
-  def update_in_csv
-    self.class.load_data
-    index_to_update = @@rows.index {|row| row.first == self.id.to_s}
-    @@rows[index_to_update] = convert_instance_to_array
-    self.class.rewrite_file
-  end
-
   def convert_instance_to_array
     row = []
+    headers = self.class.get_attr_in_csv_order
     4.times do |index|
-      row[index] = self.instance_eval("@#{@@headers_symb[index].to_s}")
+      row[index] = self.instance_eval("@#{headers[index].to_s}")
     end
     return row
   end
